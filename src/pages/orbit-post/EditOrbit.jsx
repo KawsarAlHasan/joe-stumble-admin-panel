@@ -12,6 +12,8 @@ import {
   Space,
 } from "antd";
 import { FaRegEdit } from "react-icons/fa";
+import { TbEdit } from "react-icons/tb";
+
 // import { API } from "../../api/api";
 
 const { Option } = Select;
@@ -29,6 +31,7 @@ const EditOrbit = ({ orbt, refetch }) => {
     setIsModalOpen(false);
   };
 
+  // image select handler - AddOrbit এর মতোই
   const handleImageSelect = (file) => {
     setImageFile(file);
 
@@ -38,7 +41,13 @@ const EditOrbit = ({ orbt, refetch }) => {
     };
     reader.readAsDataURL(file);
 
-    return false;
+    return false; // prevent auto upload by antd
+  };
+
+  // image remove handler - AddOrbit এর মতোই
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setImageFile(null);
   };
 
   const handleFinish = async (values) => {
@@ -81,25 +90,11 @@ const EditOrbit = ({ orbt, refetch }) => {
     }
   };
 
-  const beforeUpload = (file) => {
-    const isJpgOrPng = file.type === "image/jpeg" || file.type === "image/png";
-    if (!isJpgOrPng) {
-      message.error("You can only upload JPG/PNG file!");
-      return false;
-    }
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      message.error("Image must smaller than 2MB!");
-      return false;
-    }
-    return true;
-  };
-
   return (
     <>
-      <FaRegEdit
+      <TbEdit
         onClick={showModal}
-        className="cursor-pointer hover:text-blue-600"
+        className="cursor-pointer !text-[21px] hover:text-blue-600"
       />
 
       <Modal
@@ -109,47 +104,6 @@ const EditOrbit = ({ orbt, refetch }) => {
         footer={null}
         width={500}
       >
-        <div className="flex flex-col items-center mb-6">
-          <div className="relative mb-4">
-            <Avatar
-              size={100}
-              src={selectedImage || orbt?.image}
-              icon={<UserOutlined />}
-              className="border-2 border-gray-200"
-            />
-
-            <Upload
-              name="avatar"
-              showUploadList={false}
-              beforeUpload={beforeUpload}
-              accept="image/jpeg,image/png"
-              customRequest={({ file, onSuccess }) => {
-                onSuccess("ok");
-              }}
-              onChange={(info) => {
-                if (info.file.status === "done") {
-                  handleImageSelect(info.file.originFileObj);
-                }
-              }}
-            >
-              <Button
-                type="primary"
-                shape="circle"
-                icon={<CameraOutlined />}
-                size="small"
-                className="absolute -bottom-1 -right-1 shadow-md"
-                style={{ backgroundColor: "#1890ff" }}
-              />
-            </Upload>
-          </div>
-
-          {selectedImage && (
-            <p className="text-green-600 text-sm mb-2">
-              New image selected. Click "Update" to save changes.
-            </p>
-          )}
-        </div>
-
         <Form
           layout="vertical"
           onFinish={handleFinish}
@@ -166,6 +120,40 @@ const EditOrbit = ({ orbt, refetch }) => {
             <Input placeholder="Enter orbit title" />
           </Form.Item>
 
+          {/* Image Upload - AddOrbit এর মতোই */}
+          <Form.Item label="Upload Image">
+            <Upload
+              beforeUpload={handleImageSelect}
+              showUploadList={false}
+              accept="image/*"
+            >
+              {selectedImage ? (
+                <Space direction="vertical" align="center">
+                  <Avatar
+                    shape="square"
+                    size={120}
+                    src={selectedImage}
+                    alt="Orbit"
+                  />
+                  <Button danger onClick={handleRemoveImage}>
+                    Remove
+                  </Button>
+                </Space>
+              ) : (
+                <Space direction="vertical" align="center">
+                  <Avatar
+                    shape="square"
+                    size={120}
+                    src={orbt?.image}
+                    icon={<UserOutlined />}
+                    alt="Orbit"
+                  />
+                  <Button icon={<CameraOutlined />}>Select New Image</Button>
+                </Space>
+              )}
+            </Upload>
+          </Form.Item>
+
           <Form.Item>
             <div className="grid grid-cols-2 gap-2">
               <Button onClick={handleCancel}>Cancel</Button>
@@ -176,7 +164,7 @@ const EditOrbit = ({ orbt, refetch }) => {
                 loading={loading}
                 icon={<EditOutlined />}
               >
-                Update
+                Update Orbit Post
               </Button>
             </div>
           </Form.Item>

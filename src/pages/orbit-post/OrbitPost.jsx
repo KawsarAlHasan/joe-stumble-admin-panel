@@ -9,8 +9,14 @@ import { BiEdit } from "react-icons/bi";
 import { DeleteFilled, EyeOutlined } from "@ant-design/icons";
 import { LuPanelTopOpen, LuPanelBottomOpen } from "react-icons/lu";
 import AddOrbit from "./AddOrbit";
-import { AiOutlineCheckCircle, AiOutlineCloseCircle } from "react-icons/ai";
+import {
+  AiOutlineCheckCircle,
+  AiOutlineCloseCircle,
+  AiOutlineEdit,
+} from "react-icons/ai";
 import EditOrbit from "./EditOrbit";
+import { MdDeleteOutline } from "react-icons/md";
+import { RiDeleteBin6Line } from "react-icons/ri";
 
 function OrbitPost() {
   const location = useLocation();
@@ -150,7 +156,7 @@ function OrbitPost() {
                   <EyeOutlined />
                   <span>{orbt?.views || 0}</span>
                 </div>
-                <div className="flex gap-2 text-[17px]">
+                <div className="flex gap-2 text-[20px]">
                   <EditOrbit orbt={orbt} refetch={refetch} />
 
                   {orbt?.status === "Activated" ? (
@@ -164,7 +170,8 @@ function OrbitPost() {
                       className="cursor-pointer hover:text-orange-600"
                     />
                   )}
-                  <DeleteFilled
+
+                  <RiDeleteBin6Line
                     onClick={() => showDeleteConfirm(orbt.id)}
                     className="!text-red-500 cursor-pointer hover:text-red-700"
                   />

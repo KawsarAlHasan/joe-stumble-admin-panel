@@ -208,3 +208,47 @@ export const getMockSavedRecipes = async () => {
 
   return response.data;
 };
+
+// users list for messages
+export const getMockUsersForMessages = async () => {
+  const response = await axios.get("/messageUserList.json");
+
+  return response.data;
+};
+
+export const useUsersForMessage = () => {
+  const {
+    data: usersForMessage = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["usersForMessage"],
+    queryFn: getMockUsersForMessages,
+  });
+
+  return { usersForMessage, isLoading, isError, error, refetch };
+};
+
+// community
+export const getMockCommunity = async () => {
+  const response = await axios.get("/user_messages.json");
+
+  return response.data;
+};
+
+export const useCommunityMessages = () => {
+  const {
+    data: communityMessage = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["communityMessage"],
+    queryFn: getMockCommunity,
+  });
+
+  return { communityMessage, isLoading, isError, error, refetch };
+};
