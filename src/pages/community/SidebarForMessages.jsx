@@ -8,7 +8,7 @@ import {
   MenuOutlined,
   CloseOutlined,
 } from "@ant-design/icons";
-import { useUsersForMessage } from "../../api/api";
+import { useAllCommunity } from "../../api/api";
 import { Link, useSearchParams } from "react-router-dom";
 
 const { Search } = Input;
@@ -20,13 +20,19 @@ function SidebarForMessages({ vendorID, isMobile, onUserSelect }) {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { usersForMessage, isLoading, isError, error, refetch } =
-    useUsersForMessage();
+  const { allCommunity, isLoading, isError, error, refetch } = useAllCommunity();
 
-  // Filter users based on search query
-  const filteredUsers = usersForMessage?.filter(user =>
-    user.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  // Filter tribes based on search query
+  const filteredTribes =
+    allCommunity?.tribes?.filter((tribe) =>
+      tribe?.display_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    ) || [];
+
+  // Calculate total unread count
+  const totalUnreadCount = allCommunity?.tribes?.reduce(
+    (sum, tribe) => sum + (tribe.unread_count || 0),
+    0
+  ) || 0;
 
   // Format timestamp to relative time
   const formatTime = (dateString) => {
@@ -51,11 +57,11 @@ function SidebarForMessages({ vendorID, isMobile, onUserSelect }) {
     setSearchQuery(value);
   };
 
-  const handleUserSelect = async (user) => {
-    const senderId = user.id;
+  const handleUserSelect = async (tribe) => {
+    const senderId = tribe.id;
     searchParams.set("sender", senderId);
     setSearchParams(searchParams);
-    setSelectedUser(user);
+    setSelectedUser(tribe);
 
     if (isMobile) {
       setDrawerVisible(false);
@@ -63,7 +69,7 @@ function SidebarForMessages({ vendorID, isMobile, onUserSelect }) {
 
     // Call the parent callback if provided
     if (onUserSelect) {
-      onUserSelect(user);
+      onUserSelect(tribe);
     }
 
     try {
@@ -92,7 +98,7 @@ function SidebarForMessages({ vendorID, isMobile, onUserSelect }) {
             to={`/community`}
             className="text-xl font-semibold text-center flex-1"
           >
-            Community Messages (13)
+            Community Messages ({allCommunity?.tribes?.length || 0})
           </Link>
           {isMobile && (
             <Button
@@ -107,7 +113,7 @@ function SidebarForMessages({ vendorID, isMobile, onUserSelect }) {
         {/* Search Bar */}
         <div className="p-2">
           <Search
-            placeholder="Search sender.."
+            placeholder="Search Community..."
             onSearch={onSearch}
             onChange={(e) => setSearchQuery(e.target.value)}
             value={searchQuery}
@@ -118,7 +124,7 @@ function SidebarForMessages({ vendorID, isMobile, onUserSelect }) {
         </div>
       </div>
 
-      {/* User List */}
+      {/* Tribe List */}
       <div className="flex-1 overflow-hidden">
         <div
           className="overflow-y-auto flex-1 min-h-[69vh]"
@@ -126,24 +132,24 @@ function SidebarForMessages({ vendorID, isMobile, onUserSelect }) {
         >
           <List
             itemLayout="horizontal"
-            dataSource={filteredUsers}
+            dataSource={filteredTribes}
             loading={isLoading}
-            renderItem={(user) => (
+            renderItem={(tribe) => (
               <List.Item
                 className={`p-3 mx-2 my-1 rounded-lg border-0 hover:bg-gray-50 cursor-pointer transition-all ${
-                  selectedUser?.id === user.id 
-                    ? "bg-blue-50 border-l-4 border-l-blue-500" 
+                  selectedUser?.id === tribe.id
+                    ? "bg-blue-50 border-l-4 border-l-blue-500"
                     : ""
                 } ${isMobile ? "p-4" : "p-3"}`}
-                onClick={() => handleUserSelect(user)}
+                onClick={() => handleUserSelect(tribe)}
                 extra={
                   <div className="flex flex-col items-end">
                     <Text type="secondary" className="text-xs">
-                      {formatTime(user.last_message_time)}
+                      {formatTime(tribe.last_message_at)}
                     </Text>
-                    {user.un_read_message > 0 && (
+                    {tribe.unread_count > 0 && (
                       <Badge
-                        count={user.un_read_message}
+                        count={tribe.unread_count}
                         style={{ backgroundColor: "#1890ff" }}
                         className="mt-1"
                         size={isMobile ? "default" : "small"}
@@ -155,34 +161,46 @@ function SidebarForMessages({ vendorID, isMobile, onUserSelect }) {
                 <List.Item.Meta
                   avatar={
                     <div className="relative">
+                      {/* Tribe avatar with member count badge */}
                       <Badge
-                        dot
-                        color={user.is_active ? "#52c41a" : "#f5222d"}
+                        count={tribe.member_count}
+                        showZero
+                        style={{ backgroundColor: "#52c41a" }}
                         offset={isMobile ? [-5, 40] : [-5, 35]}
                         size={isMobile ? "default" : "small"}
                       >
                         <Avatar
                           size={isMobile ? 56 : 50}
                           src={
-                            <img
-                              src={user.profile}
-                              alt={user.full_name}
-                              className="object-cover w-full h-full"
-                            />
+                            tribe.image ? (
+                              <img
+                                src={tribe.image}
+                                alt={tribe.display_name}
+                                className="object-cover w-full h-full"
+                              />
+                            ) : null
                           }
-                        />
+                          style={{
+                            backgroundColor: !tribe.image ? "#1890ff" : undefined,
+                          }}
+                        >
+                          {!tribe.image &&
+                            tribe.display_name?.charAt(0).toUpperCase()}
+                        </Avatar>
                       </Badge>
                     </div>
                   }
                   title={
                     <div className="flex items-center">
-                      <Text 
-                        strong 
-                        className={`${isMobile ? "text-lg" : "text-base"} truncate max-w-[120px]`}
+                      <Text
+                        strong
+                        className={`${
+                          isMobile ? "text-lg" : "text-base"
+                        } truncate max-w-[120px]`}
                       >
-                        {user.full_name}
+                        {tribe.display_name}
                       </Text>
-                      {user.is_active && (
+                      {tribe.is_unlocked && (
                         <CheckCircleOutlined
                           className="text-green-500 ml-2"
                           style={{ fontSize: isMobile ? 16 : 14 }}
@@ -191,20 +209,26 @@ function SidebarForMessages({ vendorID, isMobile, onUserSelect }) {
                     </div>
                   }
                   description={
-                    <div className="flex items-center mt-1">
-                      {!user.is_active && (
-                        <ClockCircleOutlined 
-                          className="text-gray-400 mr-1" 
-                          style={{ fontSize: isMobile ? 14 : 12 }}
-                        />
-                      )}
+                    <div className="flex flex-col mt-1">
                       <Text
                         ellipsis
-                        className={`${isMobile ? "text-base" : "text-sm"} max-w-[150px]`}
+                        className={`${
+                          isMobile ? "text-base" : "text-sm"
+                        } max-w-[180px]`}
                         type="secondary"
                       >
-                        {user.last_message}
+                        {tribe.description}
                       </Text>
+                      {tribe.member_count > 0 && (
+                        <Text
+                          className={`${
+                            isMobile ? "text-xs" : "text-xs"
+                          } mt-1`}
+                          type="secondary"
+                        >
+                          {tribe.member_count} member{tribe.member_count !== 1 ? "s" : ""}
+                        </Text>
+                      )}
                     </div>
                   }
                 />
@@ -241,7 +265,7 @@ function SidebarForMessages({ vendorID, isMobile, onUserSelect }) {
         >
           Conversations
         </Button>
-        <Badge count={13} style={{ backgroundColor: '#1890ff' }} />
+        <Badge count={totalUnreadCount} style={{ backgroundColor: "#1890ff" }} />
       </div>
 
       {/* Drawer for mobile */}
@@ -254,7 +278,7 @@ function SidebarForMessages({ vendorID, isMobile, onUserSelect }) {
         bodyStyle={{ padding: 0 }}
         className="mobile-messages-drawer"
         styles={{
-          body: { padding: 0 }
+          body: { padding: 0 },
         }}
       >
         {sidebarContent}

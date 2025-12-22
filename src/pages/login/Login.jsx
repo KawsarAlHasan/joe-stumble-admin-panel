@@ -2,26 +2,31 @@ import React, { useEffect, useState } from "react";
 import { Form, Input, Button, Checkbox, message } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
-// import { API } from "../../api/api";
+import { API } from "../../api/api";
 
 const Login = () => {
   const [loading, setLoading] = useState(false); // Loading state for login button
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   const token = localStorage.getItem("token");
-  //   if (token) {
-  //     navigate("/");
-  //   }
-  // }, []);
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/");
+    }
+  }, []);
 
   const onFinish = async (values) => {
     setLoading(true); // Start loading when submitting form
     try {
-      // const response = await API.post("/login/", values);
+      const payload = {
+        email: values.email,
+        password: values.password,
+      };
 
-      // // If successful, save the token in localStorage
-      // localStorage.setItem("token", response.data.access_token);
+      const response = await API.post("/admin-dashboard/admin/login/", payload);
+
+      // If successful, save the token in localStorage
+      localStorage.setItem("token", response?.data?.data?.tokens?.access);
 
       // Show success message
       message.success("Admin Login successful!");
@@ -31,7 +36,7 @@ const Login = () => {
     } catch (error) {
       console.log(error);
       message.error(
-        error?.response?.data?.error || "Login failed. Please try again."
+        error?.response?.data?.message || "Login failed. Please try again."
       );
     } finally {
       setLoading(false); // Stop loading after request

@@ -1,20 +1,24 @@
-import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
-import { useAdminDashboard } from "../api/api";
+import { useAdminProfile } from "../api/api";
 import Loading from "../components/Loading";
 
 const PrivateRoute = ({ children }) => {
-  const { adminDashboard, isLoading, isError, error, refetch } =
-    useAdminDashboard();
+  const token = localStorage.getItem("token");
+
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+
+  const { adminProfile, isLoading, isError, error, refetch } =
+    useAdminProfile();
 
   const location = useLocation();
-  const token = localStorage.getItem("token");
 
   if (isLoading) {
     return <Loading />;
   }
 
-  if (isError || error || !adminDashboard || !token) {
+  if (isError || error || !adminProfile) {
     localStorage.removeItem("token");
     return <Navigate to="/login" state={{ from: location }} replace />;
   }

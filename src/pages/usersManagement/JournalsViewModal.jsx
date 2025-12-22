@@ -1,8 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Typography, Input, Button, Avatar, message } from "antd";
+import { useUsersJournals } from "../../api/api";
 
-function JournalsViewModal({ isOpen, onClose, journalData }) {
-  console.log(journalData, "journalData");
+function JournalsViewModal({ isOpen, onClose, userData }) {
+  const [filter, setFilter] = useState({
+    userID: userData?.user_id,
+    page: 1,
+    limit: 10,
+  });
+
+  const { userJournals, isLoading, isError, error, refetch } = useUsersJournals(
+    filter,
+    { enabled: isOpen }
+  );
+
+  // console.log(userJournals, "userJournals");
 
   return (
     <Modal
@@ -18,8 +30,8 @@ function JournalsViewModal({ isOpen, onClose, journalData }) {
       width={650}
     >
       <div className="max-h-[550px] overflow-y-auto">
-        {journalData?.length > 0 ? (
-          journalData.map((jrnl, index) => (
+        {userData?.length > 0 ? (
+          userData.map((jrnl, index) => (
             <div
               key={index}
               className=" gap-2 mb-2 border p-2 rounded-md bg-gray-200 hover:bg-gray-100"

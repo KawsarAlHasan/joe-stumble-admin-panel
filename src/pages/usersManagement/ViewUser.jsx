@@ -1,5 +1,22 @@
 import React, { useState } from "react";
-import { Modal, Typography, Button, Space, notification } from "antd";
+import {
+  Modal,
+  Typography,
+  Button,
+  Space,
+  notification,
+  Descriptions,
+  Tag,
+  Divider,
+} from "antd";
+import {
+  UserOutlined,
+  MailOutlined,
+  PhoneOutlined,
+  CalendarOutlined,
+  ManOutlined,
+  WomanOutlined,
+} from "@ant-design/icons";
 import { API } from "../../api/api";
 
 const { Title, Text } = Typography;
@@ -21,14 +38,20 @@ function ViewUser({ userDetailsData, isOpen, onClose, refetch }) {
   const handleUserEnable = async (userData) => {
     setEnableLoading(true);
     try {
-      // await API.post(`/admin/users/${userData.id}/action/`, {
-      //   action: "enable",
-      // });
-      openNotification("success", "Success", "User enabled successfully");
-      refetch();
+      await API.post(
+        `/admin-dashboard/admin/users/${userData?.user_id}/block/`
+      );
+
+      openNotification("success", "Success", "User disabled successfully");
+      refetch?.();
       onClose();
     } catch (error) {
-      openNotification("error", "Error", "Failed to enable user");
+      console.log("error", error);
+      openNotification(
+        "error",
+        "Error",
+        `${error?.response?.data?.message || "Failed to disable user"}`
+      );
     } finally {
       setEnableLoading(false);
     }
@@ -37,14 +60,19 @@ function ViewUser({ userDetailsData, isOpen, onClose, refetch }) {
   const handleUserDisable = async (userData) => {
     setDisableLoading(true);
     try {
-      // await API.post(`/admin/users/${userData.id}/action/`, {
-      //   action: "disable",
-      // });
-      openNotification("success", "Success", "User disabled successfully");
-      refetch();
+      await API.post(
+        `/admin-dashboard/admin/users/${userData?.user_id}/unblock/`
+      );
+
+      openNotification("success", "Success", "User enabled successfully");
+      refetch?.();
       onClose();
     } catch (error) {
-      openNotification("error", "Error", "Failed to disable user");
+      openNotification(
+        "error",
+        "Error",
+        `${error?.response?.data?.message || "Failed to enable user"}`
+      );
     } finally {
       setDisableLoading(false);
     }
@@ -53,65 +81,151 @@ function ViewUser({ userDetailsData, isOpen, onClose, refetch }) {
   const handleUserDelete = async (userData) => {
     setDeleteLoading(true);
     try {
-      // await API.post(`/admin/users/${userData.id}/action/`, {
-      //   action: "delete",
-      // });
+      await API.delete(
+        `/admin-dashboard/admin/users/${userData?.user_id}/delete/`
+      );
+
       openNotification("success", "Success", "User deleted successfully");
-      refetch();
+      refetch?.();
       onClose();
     } catch (error) {
-      openNotification("error", "Error", "Failed to delete user");
+      openNotification(
+        "error",
+        "Error",
+        `${error?.response?.data?.message || "Failed to delete user"}`
+      );
     } finally {
       setDeleteLoading(false);
     }
   };
 
+  const getGenderIcon = (gender) => {
+    if (gender?.toLowerCase() === "male")
+      return <ManOutlined style={{ color: "#1890ff" }} />;
+    if (gender?.toLowerCase() === "female")
+      return <WomanOutlined style={{ color: "#eb2f96" }} />;
+    return null;
+  };
+
   return (
     <Modal
-      title="User Action"
+      title={
+        <Space>
+          <UserOutlined />
+          <span>User Details & Actions</span>
+        </Space>
+      }
       open={isOpen}
       onCancel={onClose}
       footer={null}
       centered
+      width={600}
+      styles={{
+        body: { paddingTop: 24 },
+      }}
     >
       {userDetailsData ? (
         <>
-          <p>
-            <Text strong>Name: </Text>
-            {userDetailsData.full_name}
-          </p>
-          <p>
-            <Text strong>Email: </Text>
-            {userDetailsData.email}
-          </p>
-          <p>
-            <Text strong>Phone Number: </Text>
-            {userDetailsData.phone}
-          </p>
-          <p>
-            <Text strong>Gender: </Text>
-            {userDetailsData.gender}
-          </p>
-          <p>
-            <Text strong>Date of Birth: </Text>
-            {userDetailsData.date_of_birth}
-          </p>
+          <Descriptions
+            bordered
+            column={1}
+            size="small"
+            labelStyle={{ fontWeight: 600, width: "140px" }}
+          >
+            <Descriptions.Item
+              label={
+                <Space>
+                  <UserOutlined /> Full Name
+                </Space>
+              }
+            >
+              {userDetailsData?.full_name || "-"}
+            </Descriptions.Item>
 
-          <Space style={{ marginTop: 20 }}>
+            <Descriptions.Item
+              label={
+                <Space>
+                  <UserOutlined /> Username
+                </Space>
+              }
+            >
+              {userDetailsData?.username || "-"}
+            </Descriptions.Item>
+
+            <Descriptions.Item
+              label={
+                <Space>
+                  <MailOutlined /> Email
+                </Space>
+              }
+            >
+              {userDetailsData?.email || "-"}
+            </Descriptions.Item>
+
+            <Descriptions.Item
+              label={
+                <Space>
+                  <PhoneOutlined /> Phone
+                </Space>
+              }
+            >
+              {userDetailsData?.phone_number || "-"}
+            </Descriptions.Item>
+
+            <Descriptions.Item
+              label={
+                <Space>
+                  {getGenderIcon(userDetailsData?.gender)}
+                  Gender
+                </Space>
+              }
+            >
+              {userDetailsData?.gender || "-"}
+            </Descriptions.Item>
+
+            <Descriptions.Item
+              label={
+                <Space>
+                  <CalendarOutlined /> Date of Birth
+                </Space>
+              }
+            >
+              {userDetailsData?.date_of_birth || "-"}
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Status">
+              <Tag color={userDetailsData?.is_active ? "success" : "error"}>
+                {userDetailsData?.is_active ? "Active" : "Inactive"}
+              </Tag>
+            </Descriptions.Item>
+          </Descriptions>
+
+          <Divider style={{ margin: "24px 0" }} />
+
+          <Space
+            style={{
+              width: "100%",
+              justifyContent: "center",
+            }}
+            size="middle"
+          >
             <Button
-              danger
+              type="primary"
               loading={disableLoading}
               onClick={() => handleUserDisable(userDetailsData)}
+              disabled={userDetailsData?.is_active}
             >
-              Disable User
+              Enable User
             </Button>
 
             <Button
-              type="primary"
+              danger
+              type="default"
               loading={enableLoading}
               onClick={() => handleUserEnable(userDetailsData)}
+              disabled={!userDetailsData?.is_active}
             >
-              Enable User
+              Disable User
             </Button>
 
             <Button
@@ -125,7 +239,9 @@ function ViewUser({ userDetailsData, isOpen, onClose, refetch }) {
           </Space>
         </>
       ) : (
-        <Text>No user data available</Text>
+        <div style={{ textAlign: "center", padding: "40px 0" }}>
+          <Text type="secondary">No user data available</Text>
+        </div>
       )}
     </Modal>
   );

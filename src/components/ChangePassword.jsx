@@ -13,6 +13,9 @@ const ChangePassword = () => {
   const handleFinish = async (values) => {
     try {
       setLoading(true);
+
+      console.log("values", values);
+
       // const res = await API.post("/change-password/", {
       //   old_password: values.old_password,
       //   new_password: values.new_password,
@@ -21,7 +24,9 @@ const ChangePassword = () => {
       message.success("Password changed successfully!");
       setIsModalOpen(false);
     } catch (err) {
-      message.error(err.response?.data?.detail || "Failed to change password");
+      message.error(
+        err?.response?.data?.message || "Failed to change password"
+      );
     } finally {
       setLoading(false);
     }
@@ -81,7 +86,13 @@ const ChangePassword = () => {
           </Form.Item>
 
           <Form.Item>
-            <Button type="primary" className="my-main-button" htmlType="submit" loading={loading} block>
+            <Button
+              type="primary"
+              className="my-main-button"
+              htmlType="submit"
+              loading={loading}
+              block
+            >
               Change Password
             </Button>
           </Form.Item>

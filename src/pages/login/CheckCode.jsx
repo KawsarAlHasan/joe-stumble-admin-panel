@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { Form, Input, Button, message } from "antd";
 import { useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
-// import { API } from "../../api/api";
+import { API } from "../../api/api";
 
 const CheckCode = () => {
   const email = localStorage.getItem("email");
+  const reset_token = localStorage.getItem("reset_token");
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
@@ -16,18 +17,27 @@ const CheckCode = () => {
     try {
       console.log("values", values.otp);
 
+      const response = await API.post("/admin-dashboard/admin/verify-otp/", {
+        reset_token: reset_token,
+        otp: values.otp,
+      });
+
+      // If successful, save the token in localStorage
+      localStorage.setItem(
+        "reset_token",
+        response?.data?.data?.reset_token
+      );
+
       message.success("OTP verified successfully!");
 
       navigate("/set-new-password");
-
-      // console.log("response", response);
     } catch (error) {
+      console.log(error, "error");
       const errorMessage =
-        error.response?.data?.non_field_errors[0] ||
+        error?.response?.data?.message ||
         "Verification failed. Please try again.";
 
       message.error(errorMessage);
-      console.log(error, "error");
     } finally {
       setLoading(false);
     }
@@ -36,13 +46,24 @@ const CheckCode = () => {
   const handleResend = async () => {
     setResendLoading(true);
     try {
-      // const response = await API.post("/password-reset-request/", {
-      //   email: email,
-      // });
+      const response = await API.post(
+        "/admin-dashboard/admin/forgot-password/",
+        {
+          email: email,
+        }
+      );
+
+      // If successful, save the token in localStorage
+      localStorage.setItem("reset_token", response?.data?.data?.reset_token);
+      localStorage.setItem("otp", response?.data?.data?.otp);
 
       message.success("New OTP sent to your email!");
     } catch (error) {
-      message.error("Failed to resend OTP. Please try again.");
+      console.log(error, "error");
+      message.error(
+        error?.response?.data?.message ||
+          "Failed to resend OTP. Please try again."
+      );
     } finally {
       setResendLoading(false);
     }

@@ -6,7 +6,6 @@ import PasswordUpdateLogin from "../pages/login/PasswordUpdateLogin";
 import MainLayout from "../layout/MainLayout";
 import Dashboard from "../pages/dashboard/Dashboard";
 import NotFound from "../components/NotFound";
-import Test from "../Test";
 import UserManagement from "../pages/usersManagement/UserManagement";
 import CheckCode from "../pages/login/CheckCode";
 import Administrators from "../pages/administrators/Administrators";
@@ -37,7 +36,12 @@ export const router = createBrowserRouter([
   },
   {
     path: "/",
-    element: <MainLayout />,
+    element: (
+      <PrivateRoute>
+        {" "}
+        <MainLayout />{" "}
+      </PrivateRoute>
+    ),
     children: [
       {
         path: "/",
@@ -58,10 +62,6 @@ export const router = createBrowserRouter([
       {
         path: "/orbit-post",
         element: <OrbitPost />,
-      },
-      {
-        path: "/test",
-        element: <Test />,
       },
     ],
   },

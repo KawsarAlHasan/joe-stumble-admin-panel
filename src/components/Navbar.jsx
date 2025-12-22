@@ -2,28 +2,19 @@ import { Avatar, Dropdown, Button, Divider, Tag } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import logoImage from "../assets/logo.png";
 import { MenuOutlined, UserOutlined, LogoutOutlined } from "@ant-design/icons";
-// import { signOutAdmin, useAdminDashboard } from "../api/api";
 import ChangePassword from "./ChangePassword";
 import AccountSetting from "./AccountSetting";
+import { signOutAdmin, useAdminProfile } from "../api/api";
 
 const Navbar = ({ showDrawer }) => {
-  // const { adminDashboard, isLoading, isError, error, refetch } =
-  //   useAdminDashboard();
+  const { adminProfile, isLoading, isError, error, refetch } =
+    useAdminProfile();
 
   const navigate = useNavigate();
 
   const handleSignOut = () => {
-    // signOutAdmin();
+    signOutAdmin();
     navigate("/login");
-  };
-
-  const adminProfile = {
-    name: "Sha Rukh Khan",
-    profile:
-      "https://sm.mashable.com/t/mashable_me/photo/default/shah-rukh-khan-hurun-india-rich-list_h1bt.1248.jpg",
-    role: "Super Admin",
-    email: "super@admin.com",
-    phone_number: "1234567890",
   };
 
   const profileMenuItems = [
@@ -34,15 +25,17 @@ const Navbar = ({ showDrawer }) => {
           <div className="flex gap-3 items-start">
             <Avatar
               size={50}
-              src={adminProfile?.profile}
+              src={adminProfile?.profile_picture_url}
               icon={<UserOutlined />}
             />
             <div>
               <h1 className="text-[#242424] text-[16px] font-bold mb-1">
-                {adminProfile?.name}
+                {adminProfile?.full_name}
               </h1>
               <Tag color="blue" className="m-0">
-                {adminProfile?.role}
+                {adminProfile?.role == "superadmin"
+                  ? "Super Admin"
+                  : adminProfile?.role}
               </Tag>
             </div>
           </div>
@@ -54,7 +47,7 @@ const Navbar = ({ showDrawer }) => {
     },
     {
       key: "profile",
-      label: <AccountSetting adminProfile={adminProfile} />,
+      label: <AccountSetting adminProfile={adminProfile} refetch={refetch} />,
     },
     {
       key: "change-password",
@@ -105,16 +98,18 @@ const Navbar = ({ showDrawer }) => {
               <div className="flex items-center gap-3 cursor-pointer p-2 hover:bg-gray-100 rounded-lg transition-colors">
                 <Avatar
                   size="large"
-                  src={adminProfile?.profile}
+                  src={adminProfile?.profile_picture_url}
                   icon={<UserOutlined />}
                   className="border-2 border-gray-200 hover:border-orange-400 transition-colors"
                 />
                 <div className="hidden md:block ">
                   <div className="text-[#242424] text-[14px] font-semibold leading-tight">
-                    {adminProfile?.name}
+                    {adminProfile?.full_name}
                   </div>
                   <div className="text-[12px] text-gray-500 leading-tight">
-                    {adminProfile?.role}
+                    {adminProfile?.role == "superadmin"
+                      ? "Super Admin"
+                      : adminProfile?.role}
                   </div>
                 </div>
                 <div className="hidden md:block">

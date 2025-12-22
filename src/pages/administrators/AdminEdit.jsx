@@ -11,7 +11,7 @@ import {
   Upload,
   Space,
 } from "antd";
-// import { API } from "../../api/api";
+import { API } from "../../api/api";
 
 const { Option } = Select;
 
@@ -52,7 +52,7 @@ const AdminEdit = ({ adminProfile, refetch }) => {
       formData.append("role", values.role);
 
       if (imageFile) {
-        formData.append("profile", imageFile);
+        formData.append("image", imageFile);
       }
 
       console.log("Updating admin with data:", {
@@ -63,25 +63,25 @@ const AdminEdit = ({ adminProfile, refetch }) => {
         hasNewImage: !!imageFile,
       });
 
-      // await API.put(
-      //   `/admin/administrators/${adminProfile.id}/update/`,
-      //   formData,
-      //   {
-      //     headers: {
-      //       'Content-Type': 'multipart/form-data',
-      //     },
-      //   }
-      // );
+      await API.patch(
+        `/admin-dashboard/admin/administrators/${adminProfile.user_id}/update/`,
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       message.success("Admin updated successfully!");
-      refetch();
+      refetch?.();
 
       setSelectedImage(null);
       setImageFile(null);
       setIsModalOpen(false);
     } catch (err) {
       console.log(err, "err");
-      message.error(err.response?.data?.error || "Failed to update Admin");
+      message.error(err?.response?.data?.message || "Failed to update Admin");
     } finally {
       setLoading(false);
     }
@@ -123,7 +123,7 @@ const AdminEdit = ({ adminProfile, refetch }) => {
           <div className="relative mb-4">
             <Avatar
               size={100}
-              src={selectedImage || adminProfile?.profile}
+              src={selectedImage || adminProfile?.profile_picture_url}
               icon={<UserOutlined />}
               className="border-2 border-gray-200"
             />
@@ -167,7 +167,7 @@ const AdminEdit = ({ adminProfile, refetch }) => {
             id: adminProfile?.id,
             full_name: adminProfile?.full_name,
             email: adminProfile?.email,
-            phone: adminProfile?.phone,
+            phone: adminProfile?.contact_number,
             role: adminProfile?.role,
           }}
         >

@@ -8,11 +8,10 @@ import {
   message,
   Upload,
   Avatar,
-  Space,
 } from "antd";
-import { UserOutlined, CameraOutlined, EditOutlined } from "@ant-design/icons";
+import { UserOutlined, CameraOutlined } from "@ant-design/icons";
 import { FaPlus } from "react-icons/fa";
-// import { API } from "../../api/api";
+import { API } from "../../api/api";
 
 const { Option } = Select;
 
@@ -22,8 +21,12 @@ const AddAdmin = ({ refetch }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
 
+  const [form] = Form.useForm();
+
   const showModal = () => setIsModalOpen(true);
+
   const handleCancel = () => {
+    form.resetFields();
     setSelectedImage(null);
     setImageFile(null);
     setIsModalOpen(false);
@@ -53,37 +56,37 @@ const AddAdmin = ({ refetch }) => {
       setLoading(true);
 
       const formData = new FormData();
-      formData.append("name", values.name);
+      formData.append("full_name", values.name);
       formData.append("email", values.email);
       formData.append("phone", values.phone);
       formData.append("role", values.role);
+      formData.append("password", values.password);
+      formData.append("confirm_password", values.password);
 
       if (imageFile) {
-        formData.append("profile", imageFile);
+        formData.append("image", imageFile);
       }
 
-      console.log("Creating admin with data:", {
-        name: values.name,
-        email: values.email,
-        phone: values.phone,
-        role: values.role,
-        hasImage: !!imageFile,
-      });
-
-      // await API.post("/admin/administrators/create/", formData, {
-      //   headers: {
-      //     'Content-Type': 'multipart/form-data',
-      //   },
-      // });
+      await API.post(
+        "/admin-dashboard/admin/administrators/create/",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       message.success("Admin created successfully!");
       refetch?.();
 
+      form.resetFields();
       setSelectedImage(null);
       setImageFile(null);
       setIsModalOpen(false);
     } catch (err) {
-      message.error(err.response?.data?.detail || "Failed to create admin");
+      console.log(err);
+      message.error(err?.response?.data?.message || "Failed to create admin");
     } finally {
       setLoading(false);
     }
@@ -97,7 +100,7 @@ const AddAdmin = ({ refetch }) => {
     }
     const isLt2M = file.size / 1024 / 1024 < 2;
     if (!isLt2M) {
-      message.error("Image must smaller than 2MB!");
+      message.error("Image must be smaller than 2MB!");
       return false;
     }
     return true;
@@ -120,7 +123,9 @@ const AddAdmin = ({ refetch }) => {
         onCancel={handleCancel}
         footer={null}
         width={500}
+        destroyOnClose
       >
+        {/* Avatar Upload */}
         <div className="flex flex-col items-center mb-6">
           <div className="relative mb-2">
             <Avatar
@@ -130,7 +135,7 @@ const AddAdmin = ({ refetch }) => {
               className="border-2 border-gray-200"
             />
 
-            <div className="absolute -bottom-2 -right-2 flex gap-1">
+            <div className="absolute -bottom-2 -right-2">
               {selectedImage ? (
                 <Button
                   type="default"
@@ -138,51 +143,42 @@ const AddAdmin = ({ refetch }) => {
                   size="small"
                   danger
                   onClick={handleRemoveImage}
-                  className="shadow-md"
                 >
                   ×
                 </Button>
               ) : (
                 <Upload
-                  name="avatar"
                   showUploadList={false}
                   beforeUpload={beforeUpload}
-                  accept="image/jpeg,image/png"
                   customRequest={({ file, onSuccess }) => {
+                    handleImageSelect(file);
                     onSuccess("ok");
                   }}
-                  onChange={(info) => {
-                    if (info.file.status === "done") {
-                      handleImageSelect(info.file.originFileObj);
-                    }
-                  }}
+                  accept="image/jpeg,image/png"
                 >
                   <Button
+                    className="my-main-button"
                     type="primary"
                     shape="circle"
                     icon={<CameraOutlined />}
                     size="small"
-                    className="shadow-md"
                   />
                 </Upload>
               )}
             </div>
           </div>
 
-          <p className="text-gray-500 text-sm text-center">
-            {selectedImage
-              ? "Profile image added (optional)"
-              : "Add profile image (optional)"}
-          </p>
+          <p className="text-gray-500 text-sm">Add profile image (optional)</p>
         </div>
 
-        <Form layout="vertical" onFinish={handleFinish}>
+        {/* Form */}
+        <Form layout="vertical" form={form} onFinish={handleFinish}>
           <Form.Item
             label="Name"
             name="name"
             rules={[{ required: true, message: "Please enter admin name" }]}
           >
-            <Input placeholder="Enter admin name" prefix={<UserOutlined />} />
+            <Input prefix={<UserOutlined />} placeholder="Enter admin name" />
           </Form.Item>
 
           <Form.Item
@@ -194,6 +190,21 @@ const AddAdmin = ({ refetch }) => {
             ]}
           >
             <Input placeholder="Enter admin email" />
+          </Form.Item>
+
+          <Form.Item
+            label="Password"
+            name="password"
+            rules={[
+              { required: true, message: "Password is required." },
+              {
+                pattern: /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/,
+                message:
+                  "At least 8 chars, 1 uppercase, 1 number & 1 special char",
+              },
+            ]}
+          >
+            <Input.Password placeholder="Enter admin password" />
           </Form.Item>
 
           <Form.Item
@@ -219,8 +230,8 @@ const AddAdmin = ({ refetch }) => {
             <div className="grid grid-cols-2 gap-2">
               <Button onClick={handleCancel}>Cancel</Button>
               <Button
-                type="primary"
                 className="my-main-button"
+                type="primary"
                 htmlType="submit"
                 loading={loading}
                 icon={<FaPlus />}

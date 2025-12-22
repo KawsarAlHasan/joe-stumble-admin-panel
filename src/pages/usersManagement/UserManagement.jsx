@@ -5,10 +5,10 @@ import IsError from "../../components/IsError";
 import IsLoading from "../../components/IsLoading";
 import { EyeOutlined } from "@ant-design/icons";
 import ViewUser from "./ViewUser";
-import { useAllUsers } from "../../services/userService";
 import JournalsViewModal from "./JournalsViewModal";
 import VideoViewModal from "./VideoViewModal";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useAllUsersList } from "../../api/api";
 
 function UserManagement() {
   const location = useLocation();
@@ -24,14 +24,14 @@ function UserManagement() {
   });
 
   const [userDetailsData, setUserDetailsData] = useState(null);
-  const [journalData, setJournalData] = useState([]);
+  const [userData, setUserData] = useState([]);
 
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isJournalViewModalOpen, setIsJournalViewModalOpen] = useState(false);
   const [isVideoViewModalOpen, setIsVideoViewModalOpen] = useState(false);
 
-  const { allUsers, pagination, isLoading, isError, error, refetch } =
-    useAllUsers(filter);
+  const { allUsersList, isLoading, isError, error, refetch } =
+    useAllUsersList(filter);
 
   const handleUserDetails = (userData) => {
     setUserDetailsData(userData);
@@ -39,7 +39,7 @@ function UserManagement() {
   };
 
   const handleViewJournal = (data) => {
-    setJournalData(data);
+    setUserData(data);
     setIsJournalViewModalOpen(true);
   };
 
@@ -85,12 +85,12 @@ function UserManagement() {
       key: "full_name",
       render: (_, record) => (
         <div className="flex gap-2 items-center">
-          <Image
+          {/* <Image
             src={record?.profile}
             className="!w-[40px] !h-[40px] rounded-full mt-[-5px]"
-          />
+          /> */}
           <div className="mt-1">
-            <h2>{record?.full_name}</h2>
+            <h2>{record?.full_name || "-"}</h2>
             <p className="text-sm">{record?.email}</p>
           </div>
         </div>
@@ -110,16 +110,16 @@ function UserManagement() {
     },
     {
       title: <span>Phone</span>,
-      dataIndex: "phone",
-      key: "phone",
-      render: (phone) => <span>{phone}</span>,
+      dataIndex: "phone_number",
+      key: "phone_number",
+      render: (phone_number) => <span>{phone_number || "-"}</span>,
     },
     {
       title: <span>Journal</span>,
       key: "journal",
       render: (_, record) => (
         <Button
-          onClick={() => handleViewJournal(record.journal)}
+          onClick={() => handleViewJournal(record)}
           icon={<EyeOutlined />}
         >
           View Journal
@@ -166,6 +166,8 @@ function UserManagement() {
     return <IsError error={error} refetch={refetch} />;
   }
 
+  const dataSource = allUsersList?.results?.users;
+
   return (
     <div className="p-4">
       <div className="flex gap-2 mb-4">
@@ -187,12 +189,12 @@ function UserManagement() {
 
       <Table
         columns={columns}
-        dataSource={allUsers}
-        rowKey="id"
+        dataSource={dataSource}
+        rowKey="user_id"
         pagination={{
           current: filter.page,
           pageSize: filter.limit,
-          total: pagination.totalUser,
+          total: allUsersList?.count,
           showSizeChanger: false,
           pageSizeOptions: ["10", "20", "50", "100"],
         }}
@@ -210,7 +212,7 @@ function UserManagement() {
       <JournalsViewModal
         isOpen={isJournalViewModalOpen}
         onClose={() => setIsJournalViewModalOpen(false)}
-        journalData={journalData}
+        userData={userData}
       />
 
       <VideoViewModal

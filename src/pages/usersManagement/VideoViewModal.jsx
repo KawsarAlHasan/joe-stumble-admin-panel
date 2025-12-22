@@ -2,8 +2,22 @@ import React, { useEffect, useState } from "react";
 import { Modal, Typography, Input, Button, Avatar, message } from "antd";
 import video1 from "../../assets/video1.mp4";
 import video2 from "../../assets/video2.mp4";
+import { useUsersVideos } from "../../api/api";
 
 function VideoViewModal({ isOpen, onClose, userData }) {
+  const [filter, setFilter] = useState({
+    userID: userData?.user_id,
+    page: 1,
+    limit: 10,
+  });
+
+  const { userVideos, isLoading, isError, error, refetch } = useUsersVideos(
+    filter,
+    { enabled: isOpen }
+  );
+
+  // console.log(userVideos, "userVideos");
+
   const videos = [video1, video2];
   return (
     <Modal

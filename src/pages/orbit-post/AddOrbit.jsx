@@ -11,7 +11,7 @@ import {
 } from "antd";
 import { UserOutlined, CameraOutlined } from "@ant-design/icons";
 import { FaPlus } from "react-icons/fa";
-// import { API } from "../../api/api";
+import { API } from "../../api/api";
 
 const AddOrbit = ({ refetch }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -19,8 +19,11 @@ const AddOrbit = ({ refetch }) => {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imageFile, setImageFile] = useState(null);
 
+  const [form] = Form.useForm();
+
   const showModal = () => setIsModalOpen(true);
   const handleCancel = () => {
+    form.resetFields();
     setSelectedImage(null);
     setImageFile(null);
     setIsModalOpen(false);
@@ -56,26 +59,24 @@ const AddOrbit = ({ refetch }) => {
         formData.append("image", imageFile);
       }
 
-      console.log("Creating orbit with data:", {
-        name: values.title,
-        hasImage: !!imageFile,
-      });
 
-      // await API.post("/orbit/create/", formData, {
-      //   headers: {
-      //     "Content-Type": "multipart/form-data",
-      //   },
-      // });
+      await API.post("/authentication/admin/orbit-post-create/", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       message.success("Orbit post created successfully!");
       refetch?.();
 
+      form.resetFields();
       setSelectedImage(null);
       setImageFile(null);
       setIsModalOpen(false);
     } catch (err) {
+      console.log(err, "error");
       message.error(
-        err.response?.data?.detail || "Failed to create Orbit post"
+        err.response?.data?.message || "Failed to create Orbit post"
       );
     } finally {
       setLoading(false);
@@ -100,7 +101,7 @@ const AddOrbit = ({ refetch }) => {
         footer={null}
         width={500}
       >
-        <Form layout="vertical" onFinish={handleFinish}>
+        <Form layout="vertical" form={form} onFinish={handleFinish}>
           <Form.Item
             label="Orbit Title"
             name="title"

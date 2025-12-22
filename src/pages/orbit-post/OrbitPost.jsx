@@ -1,21 +1,13 @@
 import { Button, message, Modal, Tag } from "antd";
-import React from "react";
-import { FaPlus, FaRegEdit } from "react-icons/fa";
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAllOrbitPost } from "../../api/api";
+import { API, useAllOrbitPost } from "../../api/api";
 import IsError from "../../components/IsError";
 import IsLoading from "../../components/IsLoading";
-import { BiEdit } from "react-icons/bi";
-import { DeleteFilled, EyeOutlined } from "@ant-design/icons";
+import { EyeOutlined } from "@ant-design/icons";
 import { LuPanelTopOpen, LuPanelBottomOpen } from "react-icons/lu";
 import AddOrbit from "./AddOrbit";
-import {
-  AiOutlineCheckCircle,
-  AiOutlineCloseCircle,
-  AiOutlineEdit,
-} from "react-icons/ai";
+import { AiOutlineCheckCircle, AiOutlineCloseCircle } from "react-icons/ai";
 import EditOrbit from "./EditOrbit";
-import { MdDeleteOutline } from "react-icons/md";
 import { RiDeleteBin6Line } from "react-icons/ri";
 
 function OrbitPost() {
@@ -44,7 +36,7 @@ function OrbitPost() {
   };
 
   // Filter posts based on current filter
-  const filteredPosts = allOrbit.filter((post) => {
+  const filteredPosts = allOrbit?.posts?.filter((post) => {
     if (currentFilter === "All") return true;
     return post.status === currentFilter;
   });
@@ -77,14 +69,24 @@ function OrbitPost() {
       cancelText: "Cancel",
       async onOk() {
         try {
-          // await API.post(`/admin/administrators/${postID}/action/`, {
-          //   action: "delete",
-          // });
+          const formData = new FormData();
+          formData.append("id", postID);
+
+          await API.delete(
+            `/authentication/admin/orbit-post-create/`,
+            formData,
+            {
+              headers: {
+                "Content-Type": "multipart/form-data",
+              },
+            }
+          );
           message.success("Orbit post deleted successfully!");
           refetch();
         } catch (err) {
+          console.log("err", err);
           message.error(
-            err.response?.data?.error || "Failed to delete orbit post"
+            err.response?.data?.message || "Failed to delete orbit post"
           );
         }
       },
@@ -147,7 +149,7 @@ function OrbitPost() {
                 <img
                   src={orbt?.image}
                   alt={orbt?.title}
-                  className="w-full h-[160px] rounded object-cover"
+                  className="w-full h-[200px] rounded object-cover"
                 />
               </div>
 

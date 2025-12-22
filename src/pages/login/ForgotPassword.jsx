@@ -2,9 +2,7 @@ import React, { useState } from "react";
 import { Form, Input, Button, Checkbox, message } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/logo.png";
-// import { API } from "../../api/api";
-
-// import { API } from "../../api/api";
+import { API } from "../../api/api";
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -13,21 +11,27 @@ const ForgotPassword = () => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      // const response = await API.post("/password-reset-request/", {
-      //   email: values.email,
-      // });
+      const response = await API.post(
+        "/admin-dashboard/admin/forgot-password/",
+        {
+          email: values.email,
+        }
+      );
 
-      // // // If successful, save the token in localStorage
-      // localStorage.setItem("email", values.email);
+      // If successful, save the token in localStorage
+      localStorage.setItem("email", values.email);
+      localStorage.setItem("reset_token", response?.data?.data?.reset_token);
+      localStorage.setItem("otp", response?.data?.data?.otp);
 
       // Show success message
       message.success("Send code on your email successful!");
 
       navigate("/check-code");
     } catch (error) {
-      // Show error message
+      console.log(error, "error");
       message.error(
-        "Send code on your email failed. Please try again." // error.response?.data?.message
+        error?.response?.data?.message ||
+          "Send code on your email failed. Please try again."
       );
     } finally {
       setLoading(false); // Stop loading after request

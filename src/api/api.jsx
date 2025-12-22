@@ -1,9 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
+const BASE_URL = "https://joeapi.dsrt321.online";
+
 export const API = axios.create({
-  baseURL: "http://103.186.20.115:10002/api",
-  // baseURL: "http://103.186.20.115:9001/api",
+  baseURL: BASE_URL + "/api",
 });
 
 API.interceptors.request.use((config) => {
@@ -14,25 +15,25 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
-// get admin dashboard
-export const useAdminDashboard = () => {
+// get admin profile
+export const useAdminProfile = () => {
   const getData = async () => {
-    const response = await API.get("/admin/dashboard/");
-    return response.data;
+    const response = await API.get("/admin-dashboard/admin/profile/");
+    return response.data.data;
   };
 
   const {
-    data: adminDashboard = null,
+    data: adminProfile = null,
     isLoading,
     isError,
     error,
     refetch,
   } = useQuery({
-    queryKey: ["adminDashboard"],
+    queryKey: ["adminProfile"],
     queryFn: getData,
   });
 
-  return { adminDashboard, isLoading, isError, error, refetch };
+  return { adminProfile, isLoading, isError, error, refetch };
 };
 
 // sign out
@@ -40,6 +41,225 @@ export const signOutAdmin = () => {
   localStorage.removeItem("token");
   window.location.href = "/login";
 };
+
+// get  dashboard overview
+export const useDashboardOverview = () => {
+  const getData = async () => {
+    const response = await API.get(
+      "/admin-dashboard/admin/dashboard/overview/"
+    );
+    return response.data.data;
+  };
+
+  const {
+    data: dashboardOverview = null,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["dashboardOverview"],
+    queryFn: getData,
+  });
+
+  return { dashboardOverview, isLoading, isError, error, refetch };
+};
+
+// get all admins
+export const useAllAdmins = ({ page = 1, limit = 10 }) => {
+  const getData = async () => {
+    const response = await API.get(`/admin-dashboard/admin/administrators/`, {
+      params: {
+        page,
+        limit,
+      },
+    });
+
+    return response.data;
+  };
+
+  const {
+    data: admins = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["admins", page, limit],
+    queryFn: getData,
+  });
+
+  return { admins, isLoading, isError, error, refetch };
+};
+
+// get all orbit post
+export const useAllOrbitPost = () => {
+  const getData = async () => {
+    const response = await API.get("/authentication/admin/orbit-post-create/");
+    return response.data.data;
+  };
+
+  const {
+    data: allOrbit = null,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["allOrbit"],
+    queryFn: getData,
+  });
+
+  return { allOrbit, isLoading, isError, error, refetch };
+};
+
+// get all users
+export const useAllUsersList = ({ page = 1, limit = 10 }) => {
+  const getData = async () => {
+    const response = await API.get(`/admin-dashboard/admin/users/`, {
+      params: {
+        page,
+        limit,
+      },
+    });
+
+    return response.data;
+  };
+
+  const {
+    data: allUsersList = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["allUsersList", page, limit],
+    queryFn: getData,
+  });
+
+  return { allUsersList, isLoading, isError, error, refetch };
+};
+
+// get user videos
+export const useUsersVideos = (
+  { userID, page = 1, limit = 10 },
+  options = {}
+) => {
+  const getData = async () => {
+    const response = await API.get(
+      `/admin-dashboard/admin/users/videos/${userID}/`,
+      {
+        params: {
+          page,
+          limit,
+        },
+      }
+    );
+
+    return response.data;
+  };
+
+  const {
+    data: userVideos = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["userVideos", userID, page, limit],
+    queryFn: getData,
+    enabled: options.enabled ?? true,
+  });
+
+  return { userVideos, isLoading, isError, error, refetch };
+};
+
+// get user Journals
+export const useUsersJournals = (
+  { userID, page = 1, limit = 10 },
+  options = {}
+) => {
+  const getData = async () => {
+    const response = await API.get(
+      `/admin-dashboard/admin/users/${userID}/journals/`,
+      {
+        params: {
+          page,
+          limit,
+        },
+      }
+    );
+
+    return response.data;
+  };
+
+  const {
+    data: userJournals = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["userJournals", userID, page, limit],
+    queryFn: getData,
+    enabled: options.enabled ?? true,
+  });
+
+  return { userJournals, isLoading, isError, error, refetch };
+};
+
+// get all community
+export const useAllCommunity = () => {
+  const getData = async () => {
+    const response = await API.get("/chatbot/tribes/available/");
+    return response.data.data;
+  };
+
+  const {
+    data: allCommunity = null,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["allCommunity"],
+    queryFn: getData,
+  });
+
+  return { allCommunity, isLoading, isError, error, refetch };
+};
+
+// get community massages
+export const useCommunityMessages = ({ tribeID, page = 1 }, options = {}) => {
+  const getData = async () => {
+    const response = await API.get(
+      `/admin-dashboard/admin/tribes/${tribeID}/messages/`,
+      {
+        params: {
+          page,
+        },
+      }
+    );
+
+    return response.data;
+  };
+
+  const {
+    data: communityMessages = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["communityMessages", tribeID, page],
+    queryFn: getData,
+    enabled: options.enabled ?? true,
+  });
+
+  return { communityMessages, isLoading, isError, error, refetch };
+};
+
+// not uses api
 
 // users list
 export const getMockUsers = async ({ page = 1, limit = 10 }) => {
@@ -109,48 +329,6 @@ export const useStripePayments = ({ page = 1, limit = 10 }) => {
   });
 
   return { stripePayments, isLoading, isError, error, refetch };
-};
-
-// get all admin
-export const useAllAdmins = () => {
-  const getData = async () => {
-    const response = await API.get("/admin/administrators/");
-    return response.data;
-  };
-
-  const {
-    data: allAdmins = null,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ["allAdmins"],
-    queryFn: getData,
-  });
-
-  return { allAdmins, isLoading, isError, error, refetch };
-};
-
-// get all orbit post
-export const useAllOrbitPost = () => {
-  const getData = async () => {
-    const response = await axios.get("/orbitPost.json");
-    return response.data;
-  };
-
-  const {
-    data: allOrbit = null,
-    isLoading,
-    isError,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ["allOrbit"],
-    queryFn: getData,
-  });
-
-  return { allOrbit, isLoading, isError, error, refetch };
 };
 
 // administrators
@@ -238,17 +416,17 @@ export const getMockCommunity = async () => {
   return response.data;
 };
 
-export const useCommunityMessages = () => {
+export const useCommunityMessages2 = () => {
   const {
-    data: communityMessage = [],
+    data: communityMessage2 = [],
     isLoading,
     isError,
     error,
     refetch,
   } = useQuery({
-    queryKey: ["communityMessage"],
+    queryKey: ["communityMessage2"],
     queryFn: getMockCommunity,
   });
 
-  return { communityMessage, isLoading, isError, error, refetch };
+  return { communityMessage2, isLoading, isError, error, refetch };
 };

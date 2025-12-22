@@ -13,6 +13,7 @@ import {
 } from "antd";
 import { FaRegEdit } from "react-icons/fa";
 import { TbEdit } from "react-icons/tb";
+import { API } from "../../api/api";
 
 // import { API } from "../../api/api";
 
@@ -31,7 +32,6 @@ const EditOrbit = ({ orbt, refetch }) => {
     setIsModalOpen(false);
   };
 
-  // image select handler - AddOrbit এর মতোই
   const handleImageSelect = (file) => {
     setImageFile(file);
 
@@ -41,10 +41,9 @@ const EditOrbit = ({ orbt, refetch }) => {
     };
     reader.readAsDataURL(file);
 
-    return false; // prevent auto upload by antd
+    return false;
   };
 
-  // image remove handler - AddOrbit এর মতোই
   const handleRemoveImage = () => {
     setSelectedImage(null);
     setImageFile(null);
@@ -55,36 +54,28 @@ const EditOrbit = ({ orbt, refetch }) => {
       setLoading(true);
 
       const formData = new FormData();
+      formData.append("id", orbt.id);
       formData.append("title", values.title);
 
       if (imageFile) {
-        formData.append("profile", imageFile);
+        formData.append("image", imageFile);
       }
 
-      console.log("Updating Orbit with data:", {
-        title: values.title,
-        hasNewImage: !!imageFile,
+      await API.patch(`/authentication/admin/orbit-post-create/`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
 
-      // await API.put(
-      //   `/admin/administrators/${orbt.id}/update/`,
-      //   formData,
-      //   {
-      //     headers: {
-      //       'Content-Type': 'multipart/form-data',
-      //     },
-      //   }
-      // );
-
       message.success("Orbit updated successfully!");
-      refetch();
+      refetch?.();
 
       setSelectedImage(null);
       setImageFile(null);
       setIsModalOpen(false);
     } catch (err) {
       console.log(err, "err");
-      message.error(err.response?.data?.error || "Failed to update Orbit");
+      message.error(err.response?.data?.message || "Failed to update Orbit");
     } finally {
       setLoading(false);
     }
