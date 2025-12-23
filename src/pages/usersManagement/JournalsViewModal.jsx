@@ -9,10 +9,17 @@ function JournalsViewModal({ isOpen, onClose, userData }) {
     limit: 10,
   });
 
-  const { userJournals, isLoading, isError, error, refetch } = useUsersJournals(
-    filter,
-    { enabled: isOpen }
-  );
+  useEffect(() => {
+    setFilter((prev) => ({
+      ...prev,
+      userID: userData?.user_id,
+    }));
+  }, [userData]);
+
+  // const { userJournals, isLoading, isError, error, refetch } = useUsersJournals(
+  //   filter,
+  //   { enabled: isOpen && !!userData?.user_id }
+  // );
 
   // console.log(userJournals, "userJournals");
 

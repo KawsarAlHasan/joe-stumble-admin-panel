@@ -43,7 +43,7 @@ function OrbitPost() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case "Activated":
+      case "active":
         return "green";
       case "Deactivated":
         return "red";
@@ -137,7 +137,7 @@ function OrbitPost() {
                     color={getStatusColor(orbt?.status)}
                     className="text-[14px] font-semibold flex items-center gap-1"
                   >
-                    {orbt?.status === "Activated" ? (
+                    {orbt?.status === "active" ? (
                       <AiOutlineCheckCircle className="!text-[14px] mt-[1px]" />
                     ) : (
                       <AiOutlineCloseCircle className="!text-[14px] mt-[1px]" />
@@ -156,12 +156,12 @@ function OrbitPost() {
               <div className="flex justify-between mt-1.5">
                 <div className="text-[15px] flex items-center gap-1">
                   <EyeOutlined />
-                  <span>{orbt?.views || 0}</span>
+                  <span>{orbt?.viewers || 0}</span>
                 </div>
                 <div className="flex gap-2 text-[20px]">
                   <EditOrbit orbt={orbt} refetch={refetch} />
 
-                  {orbt?.status === "Activated" ? (
+                  {orbt?.status === "active" ? (
                     <LuPanelTopOpen
                       onClick={handleActivate}
                       className="cursor-pointer hover:text-green-600"

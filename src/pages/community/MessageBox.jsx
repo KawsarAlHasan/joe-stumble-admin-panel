@@ -98,69 +98,66 @@ function MessageBox({ tribeID }) {
     }
   };
 
-
   // Extract base64 image from message
-const extractBase64Image = (message) => {
-  // Pattern: [img:image/type]base64data[/img]
-  // Using non-greedy match and proper closing tag
-  const imageMatch = message.match(/\[img:(image\/\w+)\]([A-Za-z0-9+/=\s]+)\[\/img\]/);
-  
-  if (imageMatch) {
-    const mimeType = imageMatch[1];
-    // Remove any whitespace/newlines from base64
-    const base64Data = imageMatch[2].replace(/\s/g, '');
-    
-    // Get text before the image tag
-    const imageStartIndex = message.indexOf('[img:');
-    const textBefore = imageStartIndex > 0 
-      ? message.substring(0, imageStartIndex).trim() 
-      : '';
-    
-    return {
-      hasImage: true,
-      mimeType,
-      base64Data,
-      src: `data:${mimeType};base64,${base64Data}`,
-      textBefore,
-    };
-  }
-  return { hasImage: false, textBefore: message };
-};
-
-// Render message content with base64 images
-const renderMessageContent = (message) => {
-  const imageInfo = extractBase64Image(message);
-  
-  if (imageInfo.hasImage) {
-    return (
-      <div>
-        {/* Show text before image if exists */}
-        {imageInfo.textBefore && (
-          <p className="text-sm text-gray-800 whitespace-pre-wrap break-words mb-2">
-            {imageInfo.textBefore}
-          </p>
-        )}
-        {/* Show image */}
-        <div className="mt-2">
-          <Image
-            src={imageInfo.src}
-            alt="Message attachment"
-            className="max-w-xs rounded-lg hover:opacity-90 transition-opacity"
-          />
-        </div>
-      </div>
+  const extractBase64Image = (message) => {
+    // Pattern: [img:image/type]base64data[/img]
+    // Using non-greedy match and proper closing tag
+    const imageMatch = message.match(
+      /\[img:(image\/\w+)\]([A-Za-z0-9+/=\s]+)\[\/img\]/
     );
-  }
-  
-  return (
-    <p className="text-sm text-gray-800 whitespace-pre-wrap break-words">
-      {message}
-    </p>
-  );
-};
 
+    if (imageMatch) {
+      const mimeType = imageMatch[1];
+      // Remove any whitespace/newlines from base64
+      const base64Data = imageMatch[2].replace(/\s/g, "");
 
+      // Get text before the image tag
+      const imageStartIndex = message.indexOf("[img:");
+      const textBefore =
+        imageStartIndex > 0 ? message.substring(0, imageStartIndex).trim() : "";
 
+      return {
+        hasImage: true,
+        mimeType,
+        base64Data,
+        src: `data:${mimeType};base64,${base64Data}`,
+        textBefore,
+      };
+    }
+    return { hasImage: false, textBefore: message };
+  };
+
+  // Render message content with base64 images
+  const renderMessageContent = (message) => {
+    const imageInfo = extractBase64Image(message);
+
+    if (imageInfo.hasImage) {
+      return (
+        <div>
+          {/* Show text before image if exists */}
+          {imageInfo.textBefore && (
+            <p className="text-sm text-gray-800 whitespace-pre-wrap break-words mb-2">
+              {imageInfo.textBefore}
+            </p>
+          )}
+          {/* Show image */}
+          <div className="mt-2">
+            <Image
+              src={imageInfo.src}
+              alt="Message attachment"
+              className="max-w-xs rounded-lg hover:opacity-90 transition-opacity"
+            />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <p className="text-sm text-gray-800 whitespace-pre-wrap break-words">
+        {message}
+      </p>
+    );
+  };
 
   return (
     <div className="flex flex-col h-full max-h-[84vh]">
@@ -268,10 +265,10 @@ const renderMessageContent = (message) => {
                   <div className="flex flex-col space-y-4">
                     {groupedMessages[dateKey].map((msg) => {
                       const imageInfo = extractBase64Image(msg.message);
-                      const displayMessage = imageInfo.hasImage 
-                        ? "[Image]" 
+                      const displayMessage = imageInfo.hasImage
+                        ? "[Image]"
                         : msg.message;
-                      
+
                       return (
                         <div
                           key={msg.id}
