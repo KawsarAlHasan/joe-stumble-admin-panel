@@ -229,7 +229,7 @@ function Dashboard() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {dashboardOverview?.tribes?.map((community, index) => (
             <Link
-              to={`/community/${community.name}`}
+              to={`/community?sender=${community.id}`}
               className="bg-[#e6f0f5] w-full rounded-md p-4 flex flex-col items-center hover:shadow-md transition-shadow"
               key={index}
             >
