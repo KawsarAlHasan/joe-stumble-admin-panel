@@ -41,23 +41,34 @@ function OrbitPost() {
     return post.status === currentFilter;
   });
 
+  console.log("filteredPosts", filteredPosts);
+
   const getStatusColor = (status) => {
     switch (status) {
       case "active":
         return "green";
-      case "Deactivated":
-        return "red";
+      case "archived":
+        return "blue";
       default:
         return "red";
     }
   };
 
-  const handleActivate = () => {
-    message.success("Activated successfully!");
-  };
+  const handleChangeStatus = async (post, status) => {
+    try {
+      const res = await API.post("authentication/admin/orbit-posts/status/", {
+        id: post?.id,
+        action: status,
+      });
 
-  const handleDeactivate = () => {
-    message.success("Deactivated successfully!");
+      const action = status === "active" ? "Activated" : "Archived";
+      message.success(`${action} successfully!`);
+      refetch();
+    } catch (error) {
+      const action = status === "active" ? "Activated" : "Archived";
+
+      message.error(error?.response?.data?.message || `${action} failed`);
+    }
   };
 
   const showDeleteConfirm = (postID) => {
@@ -69,18 +80,9 @@ function OrbitPost() {
       cancelText: "Cancel",
       async onOk() {
         try {
-          const formData = new FormData();
-          formData.append("id", postID);
-
-          await API.delete(
-            `/authentication/admin/orbit-post-create/`,
-            formData,
-            {
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            }
-          );
+          await API.delete(`/authentication/admin/orbit-post-create/`, {
+            data: { id: postID },
+          });
           message.success("Orbit post deleted successfully!");
           refetch();
         } catch (err) {
@@ -105,16 +107,16 @@ function OrbitPost() {
             All Posts
           </Button>
           <Button
-            type={currentFilter === "Activated" ? "primary" : "default"}
-            onClick={() => handleFilterChange("Activated")}
-            className={currentFilter === "Activated" ? "my-main-button" : ""}
+            type={currentFilter === "active" ? "primary" : "default"}
+            onClick={() => handleFilterChange("active")}
+            className={currentFilter === "active" ? "my-main-button" : ""}
           >
             Activated
           </Button>
           <Button
-            type={currentFilter === "Deactivated" ? "primary" : "default"}
-            onClick={() => handleFilterChange("Deactivated")}
-            className={currentFilter === "Deactivated" ? "my-main-button" : ""}
+            type={currentFilter === "archived" ? "primary" : "default"}
+            onClick={() => handleFilterChange("archived")}
+            className={currentFilter === "archived" ? "my-main-button" : ""}
           >
             Archived
           </Button>
@@ -143,7 +145,7 @@ function OrbitPost() {
                       <AiOutlineCloseCircle className="!text-[14px] mt-[1px]" />
                     )}
 
-                    {orbt?.status}
+                    {orbt?.status == "active" ? "Activated" : "Archived"}
                   </Tag>
                 </div>
                 <img
@@ -156,20 +158,20 @@ function OrbitPost() {
               <div className="flex justify-between mt-1.5">
                 <div className="text-[15px] flex items-center gap-1">
                   <EyeOutlined />
-                  <span>{orbt?.viewers || 0}</span>
+                  <span>{orbt?.view_count || 0}</span>
                 </div>
                 <div className="flex gap-2 text-[20px]">
                   <EditOrbit orbt={orbt} refetch={refetch} />
 
                   {orbt?.status === "active" ? (
                     <LuPanelTopOpen
-                      onClick={handleActivate}
-                      className="cursor-pointer hover:text-green-600"
+                      onClick={() => handleChangeStatus(orbt, "archive")}
+                      className="cursor-pointer hover:text-orange-600"
                     />
                   ) : (
                     <LuPanelBottomOpen
-                      onClick={handleDeactivate}
-                      className="cursor-pointer hover:text-orange-600"
+                      onClick={() => handleChangeStatus(orbt, "activate")}
+                      className="cursor-pointer hover:text-green-600"
                     />
                   )}
 
